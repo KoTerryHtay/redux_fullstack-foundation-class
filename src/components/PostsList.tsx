@@ -1,42 +1,50 @@
-import { useAppDispatch, useAppSelector } from "@/hooks/useRedux";
+import { useAppDispatch } from "@/hooks/useRedux";
 import {
   addPost,
-  fetchPosts,
-  selectPostIds,
-  selectPostsError,
-  selectPostsStatus,
+  // fetchPosts,
+  // selectPostIds,
+  // selectPostsError,
+  // selectPostsStatus,
 } from "@/store/postsSlice";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import PostItem from "./PostItem";
+import { useGetPostsQuery } from "@/store/rtk/apiSlice";
 
 export default function PostsList() {
+  const [newPost, setNewPost] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const dispatch = useAppDispatch();
 
   // const { status, error } = useAppSelector((state) => state.posts);
-
   // const posts = useAppSelector(selectAllPosts);
   // const userPosts = posts.filter((post) => post.userId === "user2");
-
   // const posts = useAppSelector((state) => selectPostsByUser(state, "user2"));
 
-  const postIds = useAppSelector(selectPostIds);
-  const status = useAppSelector(selectPostsStatus);
-  const error = useAppSelector(selectPostsError);
+  const {
+    data: posts = [],
+    isLoading,
+    // isFetching,
+    isSuccess,
+    isError,
+    error,
+  } = useGetPostsQuery();
 
-  console.log("postIds >>>", postIds);
+  // if you use rtk, no need to use this
+  // const postIds = useAppSelector(selectPostIds);
+  // const status = useAppSelector(selectPostsStatus);
+  // const error = useAppSelector(selectPostsError);
+  // console.log("postIds >>>", postIds);
 
-  const [newPost, setNewPost] = useState("");
-
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchPosts());
-    }
-  }, [dispatch, status]);
+  // if you use rtk, no need to use traditional redux
+  // useEffect(() => {
+  //   if (status === "idle") {
+  //     dispatch(fetchPosts());
+  //   }
+  // }, [dispatch, status]);
 
   const handleAddPost = async () => {
     if (!newPost.trim()) return;
@@ -68,19 +76,20 @@ export default function PostsList() {
         </Button>
       </div>
 
-      {status === "pending" && (
+      {isLoading && (
         <div className="flex items-center gap-2 text-blue-600 mb-4">
           <Loader2 className="animate-spin h-5 w-5" />
           <span>Loading posts ...</span>
         </div>
       )}
 
-      {error && <div className="text-red-500">Error : {error}</div>}
+      {isError && (
+        <div className="text-red-500">Error : {error.toString()}</div>
+      )}
 
       <div className="grid gap-4 w-full max-w-md">
-        {postIds.map((postId) => (
-          <PostItem key={postId} postId={postId} />
-        ))}
+        {isSuccess &&
+          posts.map((post) => <PostItem key={post.id} post={post} />)}
       </div>
     </>
   );

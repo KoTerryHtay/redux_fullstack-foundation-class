@@ -1,18 +1,17 @@
 import { useState } from "react";
 
-import { useAppDispatch, useAppSelector } from "@/hooks/useRedux";
-import { deletePost, selectPostById, updatePost } from "@/store/postsSlice";
-// import type { Post } from "@/store/postsSlice";
+import { useAppDispatch } from "@/hooks/useRedux";
+import { deletePost, updatePost, type Post } from "@/store/postsSlice";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
 
-function PostItem({ postId }: { postId: string }) {
+function PostItem({ post }: { post: Post }) {
   const dispatch = useAppDispatch();
 
-  const post = useAppSelector((state) => selectPostById(state, postId));
+  // const post = useAppSelector((state) => selectPostById(state, postId));
 
   const [editId, setEditId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
