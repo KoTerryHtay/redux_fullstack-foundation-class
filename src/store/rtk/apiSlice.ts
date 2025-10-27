@@ -20,7 +20,11 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ["Post"],
     }),
+    getPost: builder.query<Post, string>({
+      query: (id) => `/posts/${id}`,
+    }),
   }),
 });
 
-export const { useGetPostsQuery, useAddNewPostMutation } = apiSlice;
+export const { useGetPostsQuery, useGetPostQuery, useAddNewPostMutation } =
+  apiSlice;
