@@ -3,7 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import PostItem from "./PostItem";
-import { useAddNewPostMutation, useGetPostsQuery } from "@/store/rtk/apiSlice";
+import {
+  useAddNewPostMutation,
+  useGetPostsQuery,
+} from "@/store/rtk/postsSlice";
 
 export default function PostsList() {
   const [newPost, setNewPost] = useState("");

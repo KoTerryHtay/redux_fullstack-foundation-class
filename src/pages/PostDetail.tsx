@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useParams } from "react-router";
-import { useGetPostQuery } from "@/store/rtk/apiSlice";
+import { useGetPostQuery } from "@/store/rtk/postsSlice";
 
 function PostDetailPage() {
   const [editId, setEditId] = useState<string | null>(null);
