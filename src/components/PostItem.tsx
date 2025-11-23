@@ -1,22 +1,28 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Link } from "react-router";
 import { useAppDispatch } from "@/hooks/useRedux";
 
 import {
   deletePost,
   // updatePost,
-  type Post,
+  // type Post,
 } from "@/store/postsSlice";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEditPostMutation } from "@/store/rtk/postsSlice";
+import { useEditPostMutation, useGetPostsQuery } from "@/store/rtk/postsSlice";
 
-function PostItem({ post }: { post: Post }) {
+function PostItem({ postId }: { postId: string }) {
+  // function PostItem({ post }: { post: Post }) {
   const dispatch = useAppDispatch();
 
   // const post = useAppSelector((state) => selectPostById(state, postId));
+  const { post } = useGetPostsQuery(undefined, {
+    selectFromResult: ({ data }) => ({
+      post: data?.find((post) => post.id === postId),
+    }),
+  });
 
   const [updatePost, { isLoading }] = useEditPostMutation();
 
@@ -27,10 +33,10 @@ function PostItem({ post }: { post: Post }) {
     if (!editText.trim()) return;
 
     try {
-      // await dispatch(updatePost({ id: post.id, title: editText })).unwrap();
-      await updatePost({ id: post.id, title: editText });
-
       setEditId(null);
+      // await dispatch(updatePost({ id: post.id, title: editText })).unwrap();
+      await updatePost({ id: post?.id, title: editText });
+
       setEditText("");
     } catch (error) {
       alert("Failed to update post: " + error);
@@ -39,11 +45,15 @@ function PostItem({ post }: { post: Post }) {
 
   const handleDeletePost = async () => {
     try {
-      await dispatch(deletePost(post.id)).unwrap();
+      await dispatch(deletePost(post!.id)).unwrap();
     } catch (error) {
       alert("Failed to delete post: " + error);
     }
   };
+
+  if (!post) {
+    return null;
+  }
 
   return (
     <Card key={post.id} className="bg-white shadow-md">
@@ -59,7 +69,7 @@ function PostItem({ post }: { post: Post }) {
               post.title
             )}
           </CardTitle>
-          <Link to={`/${post.id}`} className="text-sm text-blue-400">
+          <Link to={`/posts/${post.id}`} className="text-sm text-blue-400">
             See more
           </Link>
         </div>
@@ -95,5 +105,5 @@ function PostItem({ post }: { post: Post }) {
   );
 }
 
-export default PostItem;
-// export default memo(PostItem);
+// export default PostItem;
+export default memo(PostItem);

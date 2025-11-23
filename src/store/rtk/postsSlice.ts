@@ -1,5 +1,7 @@
 import { apiSlice } from "./apiSlice";
 import type { Post } from "../postsSlice";
+import { createSelector } from "@reduxjs/toolkit";
+import type { RootState } from "..";
 
 export const apiSliceWithPosts = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -13,7 +15,7 @@ export const apiSliceWithPosts = apiSlice.injectEndpoints({
     }),
     getPost: builder.query<Post, string>({
       query: (id) => `/posts/${id}`, // default cache time : 60 seconds
-      providesTags: (result, error, arg) => [{ type: "Post", id: arg }],
+      providesTags: (_result, _error, arg) => [{ type: "Post", id: arg }],
     }),
     addNewPost: builder.mutation<Post, Omit<Post, "id">>({
       query: (newPost) => ({
@@ -29,7 +31,37 @@ export const apiSliceWithPosts = apiSlice.injectEndpoints({
         method: "PATCH",
         body: post,
       }),
-      invalidatesTags: (result, error, arg) => [{ type: "Post", id: arg.id }],
+      // invalidatesTags: (result, error, arg) => [{ type: "Post", id: arg.id }],
+      // Pessimistic Update
+      // Optimistic Update
+      // onQueryStarted(queryArgument, mutationLifeCycleApi)
+      async onQueryStarted({ id, title }, { dispatch, queryFulfilled }) {
+        const getPostsPatchResult = dispatch(
+          apiSliceWithPosts.util.updateQueryData(
+            "getPosts",
+            undefined,
+            (draft) => {
+              const post = draft.find((post) => post.id === id);
+              if (post) {
+                post.title = title!;
+              }
+            }
+          )
+        );
+
+        const getPostPatchResult = dispatch(
+          apiSliceWithPosts.util.updateQueryData("getPost", id!, (draft) => {
+            draft.title = title!;
+          })
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          getPostsPatchResult.undo();
+          getPostPatchResult.undo();
+        }
+      },
     }),
   }),
 });
@@ -40,3 +72,25 @@ export const {
   useAddNewPostMutation,
   useEditPostMutation,
 } = apiSliceWithPosts;
+
+export const selectPostsResult = apiSliceWithPosts.endpoints.getPosts.select();
+
+const emptyPosts: Post[] = [];
+
+export const selectAllPosts = createSelector(
+  selectPostsResult,
+  (postsResult) => postsResult.data ?? emptyPosts
+);
+
+export const selectPostsByUserId = createSelector(
+  selectAllPosts,
+  (state: RootState, userId: string) => userId,
+  (posts, userId) => posts.filter((post) => post.userId === userId)
+);
+
+export const selectPostsIds = createSelector(
+  selectAllPosts,
+  (state: RootState, userId: string) => userId,
+  (posts, userId) =>
+    posts.filter((post) => post.userId === userId).map((post) => post.id)
+);

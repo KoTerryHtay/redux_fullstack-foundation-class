@@ -1,15 +1,14 @@
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import PostItem from "./PostItem";
 import {
-  useAddNewPostMutation,
-  useGetPostsQuery,
+  // useGetPostsQuery
+  // selectAllPosts,
+  // selectPostsByUserId,
+  selectPostsIds,
 } from "@/store/rtk/postsSlice";
+import PostInput from "./PostInput";
+import { useAppSelector } from "@/hooks/useRedux";
 
 export default function PostsList() {
-  const [newPost, setNewPost] = useState("");
   // const [loading, setLoading] = useState(false);
 
   // const dispatch = useAppDispatch();
@@ -19,18 +18,19 @@ export default function PostsList() {
   // const userPosts = posts.filter((post) => post.userId === "user2");
   // const posts = useAppSelector((state) => selectPostsByUser(state, "user2"));
 
-  const {
-    data: posts = [],
-    isLoading,
-    // isFetching,
-    isSuccess,
-    isError,
-    error,
-    // refetch,
-  } = useGetPostsQuery();
+  // const posts = useAppSelector((state) => selectPostsByUserId(state, "user2"));
+  const postsIds = useAppSelector((state) => selectPostsIds(state, "user2"));
 
-  const [addNewPost, { isLoading: isAddingNewPostLoading }] =
-    useAddNewPostMutation();
+  // if you call get api on home,you don't need this
+  // const {
+  //   data: posts = [],
+  //   isLoading,
+  //   // isFetching,
+  //   isSuccess,
+  //   isError,
+  //   error,
+  //   // refetch,
+  // } = useGetPostsQuery();
 
   // if you use rtk, no need to use this
   // const postIds = useAppSelector(selectPostIds);
@@ -45,55 +45,34 @@ export default function PostsList() {
   //   }
   // }, [dispatch, status]);
 
-  const handleAddPost = async () => {
-    if (!newPost.trim()) return;
-
-    // setLoading(true);
-
-    try {
-      // await dispatch(addPost({ title: newPost, userId: "user2" })).unwrap();
-      await addNewPost({ title: newPost, userId: "user2" }).unwrap();
-      setNewPost("");
-    } catch (error) {
-      alert("Failed to add post: " + error);
-    } finally {
-      // setLoading(false);
-    }
-  };
-
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Post Manager</h1>
 
-      <div className="flex gap-2 mb-6 w-full max-w-md">
-        <Input
-          placeholder="Write a new post..."
-          value={newPost}
-          onChange={(e) => setNewPost(e.target.value)}
-        />
-        <Button onClick={handleAddPost} disabled={isAddingNewPostLoading}>
-          Add{" "}
-          {isAddingNewPostLoading && (
-            <Loader2 className="animate-spin h-2 w-2" />
-          )}
-        </Button>
-      </div>
-      {/* <Button onClick={refetch}>Refetch</Button> */}
+      <PostInput />
 
-      {isLoading && (
+      {/* {isLoading && (
         <div className="flex items-center gap-2 text-blue-600 mb-4">
           <Loader2 className="animate-spin h-5 w-5" />
           <span>Loading posts ...</span>
         </div>
-      )}
+      )} */}
 
-      {isError && (
+      {/* {isError && (
         <div className="text-red-500">Error : {error.toString()}</div>
-      )}
+      )} */}
 
       <div className="grid gap-4 w-full max-w-md">
-        {isSuccess &&
-          posts.map((post) => <PostItem key={post.id} post={post} />)}
+        {/* {isSuccess &&
+          posts.map((post) => <PostItem key={post.id} post={post} />)} */}
+
+        {/* {posts.map((post) => (
+          <PostItem key={post.id} post={post} />
+        ))} */}
+
+        {postsIds.map((postId) => (
+          <PostItem key={postId} postId={postId} />
+        ))}
       </div>
     </>
   );
